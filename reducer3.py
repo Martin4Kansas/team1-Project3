@@ -4,6 +4,7 @@ import sys
 
 from itertools import groupby
 from operator import itemgetter
+import json
 
 SEP = "\t"
 
@@ -13,7 +14,6 @@ class Reducer(object):
         self.stream   = stream
         self.sep      = sep
         self.val_dict = {}
-        self.new_vals = []
 
     def emit(self, key, value):
         sys.stdout.write("%s%s%s\n" % (key, self.sep, value))
@@ -26,10 +26,8 @@ class Reducer(object):
                 self.val_dict[current] += item[1]
         for key in sorted(self.val_dict.keys()):
             self.emit(key, self.val_dict[key])
-            self.new_vals.append(self.val_dict[key])
-        output = ','.join(str(val) for val in self.new_vals)
-        with open('v.csv', "w") as outfile:  
-            outfile.write(output)
+        with open('v.json', 'w') as f:
+            json.dump(self.val_dict, f)
 
     def __iter__(self):
         for line in self.stream:
@@ -42,4 +40,3 @@ class Reducer(object):
 if __name__ == '__main__':
     reducer = Reducer(sys.stdin)
     reducer.reduce()
-

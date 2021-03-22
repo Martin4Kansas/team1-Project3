@@ -14,14 +14,16 @@ class Reducer(object):
         self.stream   = stream
         self.sep      = sep
         self.val_dict = {}
+        self.n = 1
 
     def emit(self, key, value):
         sys.stdout.write("%s%s%s\n" % (key, self.sep, value))
 
     def reduce(self):
+        beta = 0.85
         for current, group in groupby(self, itemgetter(0)):
             if current not in self.val_dict.keys():
-                self.val_dict[str(current)] = 0
+                self.val_dict[str(current)] = ((1.0-beta) / float(self.n))
             for item in group:
                 self.val_dict[current] += item[1]
         for key in sorted(self.val_dict.keys()):
@@ -33,7 +35,10 @@ class Reducer(object):
         for line in self.stream:
             try:
                 parts = line.split(self.sep)
-                yield parts[0], float(parts[1])
+                if parts[0] == 'n':
+                    self.n = parts[1]
+                else:
+                    yield parts[0], float(parts[1])
             except:
                 continue
 
